@@ -57,7 +57,6 @@ audio_hal_func_t AUDIO_CODEC_ES8156_DEFAULT_HANDLE = {
     .audio_codec_set_mute = es8156_codec_set_voice_mute,
     .audio_codec_set_volume = es8156_codec_set_voice_volume,
     .audio_codec_get_volume = es8156_codec_get_voice_volume,
-    .audio_codec_enable_pa = es8156_pa_power,
     .audio_hal_lock = NULL,
     .handle = NULL,
 };
@@ -127,15 +126,13 @@ static esp_err_t es8156_resume(void)
     return ret;
 }
 
-esp_err_t es8156_pa_power(bool enable)
+void es8156_pa_power(bool enable)
 {
-    esp_err_t ret = ESP_OK;
     if (enable) {
-        ret = gpio_set_level(get_pa_enable_gpio(), 1);
+        gpio_set_level(get_pa_enable_gpio(), 1);
     } else {
-        ret = gpio_set_level(get_pa_enable_gpio(), 0);
+        gpio_set_level(get_pa_enable_gpio(), 0);
     }
-    return ret;
 }
 
 esp_err_t es8156_codec_init(audio_hal_codec_config_t *cfg)

@@ -301,10 +301,9 @@ esp_err_t es8388_ctrl_state(audio_hal_codec_mode_t mode, audio_hal_ctrl_t ctrl_s
  * @param enable true for enable PA power, false for disable PA power
  *
  * @return
- *     - ESP_ERR_INVALID_ARG
- *     - ESP_OK
+ *      - void
  */
-esp_err_t es8388_pa_power(bool enable);
+void es8388_pa_power(bool enable);
 
 #ifdef __cplusplus
 }

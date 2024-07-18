@@ -63,7 +63,6 @@ audio_hal_handle_t audio_hal_init(audio_hal_codec_config_t *audio_hal_conf, audi
     }
     ret |= audio_hal->audio_codec_config_iface(audio_hal_conf->codec_mode, &audio_hal_conf->i2s_iface);
     ret |= audio_hal->audio_codec_set_volume(AUDIO_HAL_VOL_DEFAULT);
-    AUDIO_RET_ON_FALSE(TAG, ret, return NULL, "audio_hal_init failed");
     audio_hal->handle = audio_hal;
     audio_hal_func->handle = audio_hal;
     mutex_unlock(audio_hal->audio_hal_lock);
@@ -111,16 +110,6 @@ esp_err_t audio_hal_set_mute(audio_hal_handle_t audio_hal, bool mute)
     AUDIO_HAL_CHECK_NULL(audio_hal, "audio_hal handle is null", -1);
     mutex_lock(audio_hal->audio_hal_lock);
     ret = audio_hal->audio_codec_set_mute(mute);
-    mutex_unlock(audio_hal->audio_hal_lock);
-    return ret;
-}
-
-esp_err_t audio_hal_enable_pa(audio_hal_handle_t audio_hal, bool enable)
-{
-    esp_err_t ret;
-    AUDIO_HAL_CHECK_NULL(audio_hal, "audio_hal handle is null", -1);
-    mutex_lock(audio_hal->audio_hal_lock);
-    ret = audio_hal->audio_codec_enable_pa(enable);
     mutex_unlock(audio_hal->audio_hal_lock);
     return ret;
 }

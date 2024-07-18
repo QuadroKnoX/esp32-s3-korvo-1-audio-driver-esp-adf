@@ -50,7 +50,6 @@ audio_hal_func_t AUDIO_CODEC_ES8374_DEFAULT_HANDLE = {
     .audio_codec_set_mute = es8374_set_voice_mute,
     .audio_codec_set_volume = es8374_codec_set_voice_volume,
     .audio_codec_get_volume = es8374_codec_get_voice_volume,
-    .audio_codec_enable_pa = es8374_pa_power,
     .audio_hal_lock = NULL,
     .handle = NULL,
 };
@@ -629,7 +628,7 @@ static int es8374_set_d2se_pga(es_d2se_pga_t gain)
         res = es8374_read_reg(0x21, &reg);
         reg &= 0xfb;
         reg |= gain << 2;
-        res |= es8374_write_reg(0x21, reg); //MIC PGA
+        res = es8374_write_reg(0x21, reg); //MIC PGA
     } else {
         res = 0xff;
         LOG_8374("invalid microphone gain!");
@@ -641,7 +640,7 @@ static int es8374_set_d2se_pga(es_d2se_pga_t gain)
 static int es8374_init_reg(audio_hal_codec_mode_t ms_mode, es_i2s_fmt_t fmt, es_i2s_clock_t cfg, es_dac_output_t out_channel, es_adc_input_t in_channel)
 {
     int res = 0;
-    uint8_t reg = 0;
+    uint8_t reg;
 
     res |= es8374_write_reg(0x00, 0x3F); //IC Rst start
     res |= es8374_write_reg(0x00, 0x03); //IC Rst stop
@@ -734,17 +733,10 @@ esp_err_t es8374_codec_init(audio_hal_codec_config_t *cfg)
 
 esp_err_t es8374_codec_deinit(void)
 {
-    if (!es8374_codec_initialized()) {
-        ESP_LOGW(ES8374_TAG, "The es8374 codec has already been deinit!");
-        return ESP_FAIL;
-    }
-    esp_err_t res = ESP_OK;
     codec_init_flag = 0;
-    res = es8374_write_reg(0x00, 0x7F); // IC Reset and STOP
-    res |= i2c_bus_delete(i2c_handle);
-    return res;
+    i2c_bus_delete(i2c_handle);
+    return es8374_write_reg(0x00, 0x7F); // IC Reset and STOP
 }
-
 esp_err_t es8374_codec_config_i2s(audio_hal_codec_mode_t mode, audio_hal_codec_i2s_iface_t *iface)
 {
     esp_err_t res = ESP_OK;
@@ -792,9 +784,8 @@ esp_err_t es8374_codec_ctrl_state(audio_hal_codec_mode_t mode, audio_hal_ctrl_t 
     return res;
 }
 
-esp_err_t es8374_pa_power(bool enable)
+void es8374_pa_power(bool enable)
 {
-    esp_err_t ret = ESP_OK;
     gpio_config_t  io_conf;
     memset(&io_conf, 0, sizeof(io_conf));
     io_conf.mode = GPIO_MODE_OUTPUT;
@@ -803,9 +794,8 @@ esp_err_t es8374_pa_power(bool enable)
     io_conf.pull_up_en = 0;
     gpio_config(&io_conf);
     if (enable) {
-        ret = gpio_set_level(get_pa_enable_gpio(), 1);
+        gpio_set_level(get_pa_enable_gpio(), 1);
     } else {
-        ret = gpio_set_level(get_pa_enable_gpio(), 0);
+        gpio_set_level(get_pa_enable_gpio(), 0);
     }
-    return ret;
 }
