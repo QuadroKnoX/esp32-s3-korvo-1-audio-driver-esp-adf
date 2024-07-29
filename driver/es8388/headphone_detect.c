@@ -34,11 +34,12 @@
 #include "es8388.h"
 #include "board.h"
 
+
 #ifdef CONFIG_ESP_LYRAT_V4_3_BOARD
 
 #define HP_DELAY_TIME_MS       1000
 
-static char *TAG = "HEADPHONE";
+static const char *TAG = "HEADPHONE";
 static xTimerHandle timer_headphone;
 
 static void hp_timer_cb(TimerHandle_t xTimer)
@@ -46,7 +47,6 @@ static void hp_timer_cb(TimerHandle_t xTimer)
     int num = (int)pvTimerGetTimerID(xTimer);
     int res = gpio_get_level(num);
     es8388_pa_power(res);
-    ets_printf("Headphone jack %s\n", res ? "removed" : "inserted");
 }
 
 static int hp_timer_init(int num)
@@ -77,7 +77,7 @@ void headphone_detect_deinit()
 
 int headphone_status_get()
 {
-    return gpio_get_level(0);
+    return gpio_get_level(get_headphone_detect_gpio());
 }
 
 void headphone_detect_init(int num)

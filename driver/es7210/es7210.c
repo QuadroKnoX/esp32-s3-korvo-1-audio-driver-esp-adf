@@ -65,6 +65,7 @@ audio_hal_func_t AUDIO_CODEC_ES7210_DEFAULT_HANDLE = {
     .audio_codec_config_iface = es7210_adc_config_i2s,
     .audio_codec_set_mute = es7210_set_mute,
     .audio_codec_set_volume = es7210_adc_set_volume,
+    .audio_codec_enable_pa = NULL,
     .audio_hal_lock = NULL,
     .handle = NULL,
 };
@@ -173,7 +174,7 @@ static int i2c_init()
         .master.clk_speed = 100000,
     };
     ret = get_i2c_pins(I2C_NUM_0, &es_i2c_cfg);
-    AUDIO_CHECK(TAG, !ret, return ESP_FAIL;, "getting i2c pins error");
+    AUDIO_RET_ON_FALSE(TAG, ret, return ESP_FAIL, "getting i2c pins error");
     es7210_handle.i2c_handle = i2c_bus_create(I2C_NUM_0, &es_i2c_cfg);
     return ret;
 }
@@ -201,7 +202,6 @@ int es7210_read_reg(uint8_t reg_addr)
 
 esp_err_t es7210_config_sample(audio_hal_iface_samples_t sample)
 {
-    uint8_t regv;
     int coeff;
     int sample_fre = 0;
     int mclk_fre = 0;
@@ -244,6 +244,7 @@ esp_err_t es7210_config_sample(audio_hal_iface_samples_t sample)
     /* Set clock parammeters */
     if (coeff >= 0) {
         /* Set adc_div & doubler & dll */
+        uint8_t regv;
         regv = es7210_read_reg(ES7210_MAINCLK_REG02) & 0x00;
         regv |= coeff_div[coeff].adc_div;
         regv |= coeff_div[coeff].doubler << 6;
@@ -554,14 +555,22 @@ esp_err_t es7210_adc_set_volume(int volume)
 
 esp_err_t es7210_set_mute(bool enable)
 {
-    ESP_LOGD(TAG, "ES7210 SetMute :%d", enable);
-    return ESP_OK;
+    int ret = 0;
+    if (enable) {
+        ret |= es7210_update_reg_bit(0x14, 0x03, 0x03);
+        ret |= es7210_update_reg_bit(0x15, 0x03, 0x03);
+    } else {
+        ret |= es7210_update_reg_bit(0x14, 0x03, 0x00);
+        ret |= es7210_update_reg_bit(0x15, 0x03, 0x00);
+    }
+    ESP_LOGI(TAG, "%s", enable ? "Muted" : "Unmuted");
+    return ret == 0 ? ESP_OK : ESP_FAIL;
 }
 
 void es7210_read_all(void)
 {
     for (int i = 0; i <= 0x4E; i++) {
         uint8_t reg = es7210_read_reg(i);
-        ets_printf("REG:%02x, %02x\n", reg, i);
+        ESP_LOGI(TAG, "REG:%02x, %02x", reg, i);
     }
 }

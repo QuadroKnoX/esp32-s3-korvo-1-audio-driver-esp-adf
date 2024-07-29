@@ -79,6 +79,7 @@ audio_hal_func_t AUDIO_CODEC_TAS5805M_DEFAULT_HANDLE = {
     .audio_codec_set_mute = tas5805m_set_mute,
     .audio_codec_set_volume = tas5805m_set_volume,
     .audio_codec_get_volume = tas5805m_get_volume,
+    .audio_codec_enable_pa = NULL,
     .audio_hal_lock = NULL,
     .handle = NULL,
 };
@@ -173,7 +174,7 @@ esp_err_t tas5805m_set_volume(int volume)
 
     ret = i2c_bus_write_bytes(i2c_handler, TAS5805M_ADDR, &cmd[0], 1, &cmd[1], 1);
 
-    ESP_LOGD(TAG, "Set volume:%.2d reg_value:0x%.2x dB:%.1f", dac_vol_handle->user_volume, reg,
+    ESP_LOGD(TAG, "Set volume:%.2d reg_value:0x%.2x dB:%.1f", (int)dac_vol_handle->user_volume, reg,
             audio_codec_cal_dac_volume(dac_vol_handle));
     return ret;
 }

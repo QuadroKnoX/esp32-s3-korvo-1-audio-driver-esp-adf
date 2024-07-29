@@ -47,6 +47,7 @@ audio_hal_func_t AUDIO_CODEC_ES7243_DEFAULT_HANDLE = {
     .audio_codec_set_mute = es7243_adc_set_voice_mute,
     .audio_codec_set_volume = es7243_adc_set_voice_volume,
     .audio_codec_get_volume = es7243_adc_get_voice_volume,
+    .audio_codec_enable_pa = NULL,
     .audio_hal_lock = NULL,
     .handle = NULL,
 };
@@ -79,7 +80,11 @@ esp_err_t es7243_adc_set_addr(int addr)
 
 static esp_err_t es7243_mclk_active(uint8_t mclk_gpio)
 {
+    #if (ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0))
+    esp_rom_gpio_pad_select_gpio(mclk_gpio);
+    #else
     gpio_pad_select_gpio(mclk_gpio);
+    #endif
     gpio_set_direction(mclk_gpio, GPIO_MODE_OUTPUT);
     /*
         Before initializing es7243, it is necessary to output
