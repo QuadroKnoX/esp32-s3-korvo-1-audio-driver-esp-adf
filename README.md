@@ -9,6 +9,6 @@ esp32:
     ...
     components:
       - name: esp32s3korvo1-audio-driver
-        source: github://QuadroKnoX/esp32-s3-korvo-1-audio-driver-esp-adf@2.5
+        source: github://QuadroKnoX/esp32-s3-korvo-1-audio-driver-esp-adf@2.6
         refresh: 0s
 ```
